@@ -32,8 +32,6 @@ void fanSet(int speed) {
       digitalWrite(pinHigh, LOW);
       break;
     case 1:
-    case 2:
-    case 3:
       digitalWrite(pinLow, HIGH);
       digitalWrite(pinMid, LOW);
       digitalWrite(pinHigh, LOW);
