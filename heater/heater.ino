@@ -1,19 +1,26 @@
+#include <LiquidCrystal_I2C.h>
+
+//#include <EEPROMex.h>
+//#include <EEPROMVar.h>
+
 #include <DHT.h>
 #include <DHT_U.h>
 
-#include <EEPROMex.h>
-#include <EEPROMVar.h>
-
-#define PINDHT 2
-#define PINLOW 7
-#define PINMID 8
-#define PINHIGH 9
+#define PINDHT 12
+#define PINLOW 14
+#define PINMID 13
+#define PINHIGH 16
 #define DHTTYPE DHT22
 #define INTERVAL 10000    // Interval between measurements
+#define LCDADDR 0x3F
+#define LCDCOL 16
+#define LCDROW 2
 
 float humCurr;
 float tempCurrC;
+float heatIndex;
 float tempTargetC = 21.1;
+float dT;
 
 int p_restore = 0;
 int p_tempTargetC = 4;
@@ -21,6 +28,8 @@ int p_tempTargetC = 4;
 int currSpeed;
 
 DHT dht(PINDHT, DHTTYPE);
+LiquidCrystal_I2C lcd(LCDADDR, LCDCOL, LCDROW);
+
 
 void fanSet(int speed) {
   Serial.print("Current temperature is ");
@@ -62,7 +71,7 @@ void fanSet(int speed) {
 void setup() {
   Serial.println("Starting up...");
 
-  EEPROM.write(p_restore, false);
+//  EEPROM.write(p_restore, false);
 
   Serial.begin(9600);
   dht.begin();
@@ -71,37 +80,47 @@ void setup() {
   pinMode(PINMID, OUTPUT);
   pinMode(PINHIGH, OUTPUT);
 
-  bool restore = EEPROM.read(p_restore);
+//  bool restore = EEPROM.read(p_restore);
+//
+//  if (restore) {
+//    Serial.println("Restoration flag is high, restoring target temperature");
+//
+//    tempTargetC = EEPROM.readFloat(p_tempTargetC);
+//
+//    Serial.write("Target temperature restored to "); Serial.println(tempTargetC);
+//  } else {
+//    Serial.println("Restoration flag is low, setting it high and writing default target temperature...");
+//
+//    EEPROM.update(p_restore, true);
+//    EEPROM.updateFloat(p_tempTargetC, tempTargetC);
+//  }
+  
+  lcd.init();
+  lcd.backlight();
 
-  if (restore) {
-    Serial.println("Restoration flag is high, restoring target temperature");
+  lcd.print("Hello!");
+  
+  pinMode(0, OUTPUT);
 
-    tempTargetC = EEPROM.readFloat(p_tempTargetC);
-
-    Serial.write("Target temperature restored to "); Serial.println(tempTargetC);
-  } else {
-    Serial.println("Restoration flag is low, setting it high and writing default target temperature...");
-
-    EEPROM.update(p_restore, true);
-    EEPROM.updateFloat(p_tempTargetC, tempTargetC);
-  }
+  dht.begin();
 }
-
+ 
 void loop() {
   delay(INTERVAL);
-  
-  float dT;
 
   humCurr = dht.readHumidity();
   tempCurrC = dht.readTemperature();
   dT = tempTargetC - tempCurrC;
+  heatIndex = dht.computeHeatIndex(tempCurrC, humCurr, false);
 
-//  if (isnan(tempCurrC)) {
-//    Serial.println("Failed to read from DHT sensor");
-//    return;
-//  }
+  if (isnan(tempCurrC)) {
+    Serial.println("Failed to read from DHT sensor");
+    return;
+  }
 
   Serial.print(tempCurrC);
+  Serial.print(" degC, heat index is ");
+  Serial.print(heatIndex);
   Serial.print(" degC, target is ");
   Serial.print(tempTargetC);
   Serial.print(" degC, dT = ");
@@ -127,4 +146,17 @@ void loop() {
       fanSet(0);
     }
   }
+
+  lcd.setCursor(0, 0);
+  lcd.print("T: ");
+  lcd.print(tempCurrC);
+  lcd.print(" / ");
+  lcd.print(tempTargetC);
+  lcd.setCursor(0, 1);
+  lcd.print("H: ");
+  lcd.print(humCurr);
+  lcd.print("% F: ");
+  lcd.print(currSpeed);
+  lcd.print("/3");
 }
+
