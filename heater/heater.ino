@@ -171,7 +171,7 @@ void updateState() {
 void readTemp() {
   humCurr = dht.readHumidity();
   tempCurrC = dht.readTemperature();
-  dT = tempCurrC - tempTargetC;
+  dT = tempTargetC - tempCurrC;
   heatIndex = dht.computeHeatIndex(tempCurrC, humCurr, false);
 }
 
