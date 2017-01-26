@@ -176,8 +176,10 @@ void readTemp() {
 }
 
 void updateSpeed() {
-  if (dT < -0.3 || currFanMode == 0 && currSpeed != 0) {
-    fanSet(0);
+  if (dT < -0.3 || currFanMode == 0) {
+    if (currSpeed != 0) {
+      fanSet(0);
+    }
     return;
   }
 
