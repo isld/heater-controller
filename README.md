@@ -10,8 +10,8 @@ So an Arduino based controller is about to replace it.
 - [X] measure room temperature;
 - [ ] measure heating water temperature;
 - [ ] stop the fan if heating water is colder than target temperature;
-- [ ] display data on a segmented LCD;
-- [ ] settable target temperature via buttons;
+- [X] display data on a segmented LCD;
+- [X] settable target temperature via buttons;
 - [ ] programmable schedule.
 
 ## Hardware used
